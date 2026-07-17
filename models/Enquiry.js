@@ -1,4 +1,3 @@
-// models/Enquiry.js
 const mongoose = require('mongoose');
 
 const enquirySchema = new mongoose.Schema({
@@ -19,15 +18,20 @@ const enquirySchema = new mongoose.Schema({
     required: [true, 'Please add a phone number'],
     trim: true
   },
-  subject: {
+  preferredSector: {
     type: String,
-    required: [true, 'Please add a subject'],
-    trim: true
+    trim: true,
+    default: ''
   },
   message: {
     type: String,
-    required: [true, 'Please add a message'],
-    trim: true
+    trim: true,
+    default: ''
+  },
+  enquiryType: {
+    type: String,
+    enum: ['buy', 'rent', 'invest', 'valuation', 'contact', 'general'],
+    default: 'general'
   },
   property: {
     type: mongoose.Schema.Types.ObjectId,
