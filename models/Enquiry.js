@@ -30,7 +30,7 @@ const enquirySchema = new mongoose.Schema({
   },
   enquiryType: {
     type: String,
-    enum: ['buy', 'rent', 'invest', 'valuation', 'contact', 'general'],
+    enum: ['buy', 'rent', 'invest', 'valuation', 'contact', 'general', 'site-visit'],
     default: 'general'
   },
   property: {
