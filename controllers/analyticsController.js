@@ -3,6 +3,29 @@ const Enquiry = require('../models/Enquiry');
 const Domain = require('../models/Domain');
 const User = require('../models/User');
 
+// Helper to get date range
+const getDateRange = (period) => {
+  const now = new Date();
+  let startDate;
+  switch (period) {
+    case 'day':
+      startDate = new Date(now.setHours(0, 0, 0, 0));
+      break;
+    case 'week':
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case 'month':
+      startDate = new Date(now.setDate(now.getDate() - 30));
+      break;
+    case 'year':
+      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      break;
+    default:
+      startDate = new Date(now.setDate(now.getDate() - 30));
+  }
+  return startDate;
+};
+
 // Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -52,8 +75,6 @@ exports.getDashboardStats = async (req, res) => {
 exports.getPropertyAnalytics = async (req, res) => {
   try {
     const { period = 'month' } = req.query;
-    
-    // Get date range based on period
     const dateRange = getDateRange(period);
     
     const [
@@ -73,20 +94,20 @@ exports.getPropertyAnalytics = async (req, res) => {
         { $group: { _id: '$type', count: { $sum: 1 } } }
       ]),
       Property.aggregate([
-        { $group: { _id: '$city', count: { $sum: 1 } } },
+        { $group: { _id: '$sector', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 }
       ]),
       Property.aggregate([
-        { $group: { _id: null, avgPrice: { $avg: '$price' } } }
+        { $group: { _id: null, avgPrice: { $avg: '$price.min' } } }
       ]),
       Property.aggregate([
-        { $group: { _id: null, minPrice: { $min: '$price' }, maxPrice: { $max: '$price' } } }
+        { $group: { _id: null, minPrice: { $min: '$price.min' }, maxPrice: { $max: '$price.min' } } }
       ]),
       Property.find()
         .sort({ createdAt: -1 })
         .limit(10)
-        .select('title price status city createdAt')
+        .select('title price sector status createdAt')
     ]);
 
     res.status(200).json({
@@ -115,6 +136,7 @@ exports.getPropertyAnalytics = async (req, res) => {
 exports.getEnquiryAnalytics = async (req, res) => {
   try {
     const { period = 'month' } = req.query;
+    const dateRange = getDateRange(period);
     
     const [
       totalEnquiries,
@@ -253,73 +275,30 @@ exports.getUserAnalytics = async (req, res) => {
   }
 };
 
-// Get revenue analytics
+// Revenue analytics (placeholder)
 exports.getRevenueAnalytics = async (req, res) => {
-  try {
-    // This is a placeholder - implement based on your payment/order models
-    res.status(200).json({
-      success: true,
-      data: {
-        totalRevenue: 0,
-        revenueThisMonth: 0,
-        revenueThisYear: 0,
-        bySource: [],
-        byProperty: []
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching revenue analytics',
-      error: error.message
-    });
-  }
+  res.status(200).json({
+    success: true,
+    data: {
+      totalRevenue: 0,
+      revenueThisMonth: 0,
+      revenueThisYear: 0,
+      bySource: [],
+      byProperty: []
+    }
+  });
 };
 
-// Get traffic analytics
+// Traffic analytics (placeholder)
 exports.getTrafficAnalytics = async (req, res) => {
-  try {
-    // This is a placeholder - implement with actual analytics data
-    res.status(200).json({
-      success: true,
-      data: {
-        pageViews: 0,
-        uniqueVisitors: 0,
-        bounceRate: 0,
-        popularPages: [],
-        trafficSources: []
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching traffic analytics',
-      error: error.message
-    });
-  }
+  res.status(200).json({
+    success: true,
+    data: {
+      pageViews: 0,
+      uniqueVisitors: 0,
+      bounceRate: 0,
+      popularPages: [],
+      trafficSources: []
+    }
+  });
 };
-
-// Helper function to get date range
-function getDateRange(period) {
-  const now = new Date();
-  let startDate;
-  
-  switch (period) {
-    case 'day':
-      startDate = new Date(now.setHours(0, 0, 0, 0));
-      break;
-    case 'week':
-      startDate = new Date(now.setDate(now.getDate() - 7));
-      break;
-    case 'month':
-      startDate = new Date(now.setDate(now.getDate() - 30));
-      break;
-    case 'year':
-      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-      break;
-    default:
-      startDate = new Date(now.setDate(now.getDate() - 30));
-  }
-  
-  return startDate;
-}
